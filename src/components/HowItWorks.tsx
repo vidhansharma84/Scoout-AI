@@ -39,15 +39,30 @@ export default function HowItWorks() {
           <div className="lg:col-span-4 lg:col-start-9">
             <p className="text-foreground/70 text-base sm:text-lg max-w-md text-balance">
               We&apos;ve built and trained advanced vision models that plug
-              into your existing CCTV system to detect early signs of smoke
-              and gas-leak patterns and trigger instant alerts.
+              into your existing CCTV system to detect suspicious activities,
+              early signs of smoke and gas-leak patterns, and trigger instant
+              alerts.
             </p>
-            <a
-              href="#request"
-              className="btn-shine mt-6 inline-flex items-center gap-2 rounded-full bg-foreground text-background px-5 py-2.5 text-sm font-medium hover:bg-accent hover:text-background transition-colors"
-            >
-              Book Demo →
-            </a>
+            <div className="mt-6 flex flex-wrap items-center gap-3">
+              <a
+                href="#request"
+                className="btn-shine inline-flex items-center gap-2 rounded-full bg-foreground text-background px-5 py-2.5 text-sm font-medium hover:bg-accent hover:text-background transition-colors"
+              >
+                Book Demo →
+              </a>
+              <a
+                href="#watch"
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 backdrop-blur px-5 py-2.5 text-sm font-medium text-foreground hover:border-accent/60 hover:bg-surface transition-colors"
+              >
+                <span
+                  aria-hidden
+                  className="grid h-5 w-5 place-items-center rounded-full bg-accent text-background text-[9px]"
+                >
+                  ▶
+                </span>
+                Watch Video
+              </a>
+            </div>
           </div>
         </div>
 

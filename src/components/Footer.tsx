@@ -1,6 +1,7 @@
 import Logo from "./Logo";
 
 const socials = [
+  { name: "LinkedIn", href: "#" },
   { name: "Facebook", href: "#" },
   { name: "Twitter / X", href: "#" },
   { name: "Instagram", href: "#" },

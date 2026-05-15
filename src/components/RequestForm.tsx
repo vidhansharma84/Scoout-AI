@@ -62,10 +62,15 @@ export default function RequestForm() {
                     <Field label="City / Town" name="city" placeholder="Accra" />
                   </div>
 
-                  <div className="mt-5">
+                  <div className="mt-5 grid gap-5 sm:grid-cols-2">
                     <Field
-                      label="Type of site"
-                      name="site"
+                      label="Business Name"
+                      name="businessName"
+                      placeholder="e.g. Scoout Mart"
+                    />
+                    <Field
+                      label="Type"
+                      name="businessType"
                       placeholder="Retail store, supermarket, hotel, petrol station..."
                     />
                   </div>

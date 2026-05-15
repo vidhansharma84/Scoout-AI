@@ -19,7 +19,7 @@ export default function Alerts() {
             </h2>
             <p className="mt-6 text-foreground/70 text-lg max-w-xl">
               Push notifications. SMS. A live phone call when you can&apos;t miss it.
-              Even when data is patchy, your alert still gets through.
+              Even when data is patchy or off, your alert still goes through.
             </p>
 
             <ul className="mt-8 grid grid-cols-2 gap-3 max-w-md">
