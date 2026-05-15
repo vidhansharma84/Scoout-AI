@@ -1,9 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
-import SmoothScroll from "@/components/SmoothScroll";
-import Nav from "@/components/Nav";
-import Footer from "@/components/Footer";
 
 const sans = Inter({
   variable: "--font-sans",
@@ -37,11 +34,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <div className="grain" aria-hidden />
-        <SmoothScroll>
-          <Nav />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </SmoothScroll>
+        {children}
       </body>
     </html>
   );

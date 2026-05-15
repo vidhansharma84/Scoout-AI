@@ -5,6 +5,8 @@ import { useState } from "react";
 
 export default function RequestForm() {
   const [submitted, setSubmitted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   return (
     <section id="request" className="relative py-24 sm:py-32 border-t border-border">
@@ -45,9 +47,30 @@ export default function RequestForm() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
-              onSubmit={(e) => {
+              onSubmit={async (e) => {
                 e.preventDefault();
-                setSubmitted(true);
+                if (submitting) return;
+                setSubmitting(true);
+                setError(null);
+                const fd = new FormData(e.currentTarget);
+                const payload = Object.fromEntries(fd.entries());
+                try {
+                  const res = await fetch("/api/request", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload),
+                  });
+                  if (res.ok) {
+                    setSubmitted(true);
+                  } else {
+                    const data = await res.json().catch(() => ({}));
+                    setError(data?.error ?? "Submission failed. Please try again.");
+                  }
+                } catch {
+                  setError("Network error. Please check your connection.");
+                } finally {
+                  setSubmitting(false);
+                }
               }}
               className="rounded-3xl border border-border bg-surface/50 p-6 sm:p-10 backdrop-blur-xl"
             >
@@ -75,6 +98,12 @@ export default function RequestForm() {
                     />
                   </div>
 
+                  {error && (
+                    <p className="mt-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5">
+                      {error}
+                    </p>
+                  )}
+
                   <div className="mt-7 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <p className="text-xs text-foreground/55 max-w-sm">
                       By submitting, you agree to receive a follow-up call or
@@ -82,9 +111,10 @@ export default function RequestForm() {
                     </p>
                     <button
                       type="submit"
-                      className="btn-shine inline-flex items-center justify-center gap-2 rounded-full bg-accent text-background px-6 py-3.5 font-medium glow-orange hover:bg-accent-2 transition-colors"
+                      disabled={submitting}
+                      className="btn-shine inline-flex items-center justify-center gap-2 rounded-full bg-accent text-background px-6 py-3.5 font-medium glow-orange hover:bg-accent-2 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                     >
-                      Request access
+                      {submitting ? "Sending…" : "Request access"}
                       <span aria-hidden>→</span>
                     </button>
                   </div>
