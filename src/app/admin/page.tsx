@@ -1,5 +1,6 @@
 import { listSubmissions } from "@/lib/submissions";
 import Logo from "@/components/Logo";
+import LogoutButton from "./LogoutButton";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -22,12 +23,15 @@ export default async function AdminPage() {
               </p>
             </div>
           </div>
-          <a
-            href="/"
-            className="text-sm text-foreground/60 hover:text-foreground transition-colors"
-          >
-            ← Back to site
-          </a>
+          <div className="flex items-center gap-4">
+            <a
+              href="/"
+              className="text-sm text-foreground/60 hover:text-foreground transition-colors"
+            >
+              ← Back to site
+            </a>
+            <LogoutButton />
+          </div>
         </div>
       </header>
 
