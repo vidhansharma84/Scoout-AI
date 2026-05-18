@@ -93,7 +93,7 @@ export default function HowItWorks() {
                 className="pointer-events-none absolute -bottom-24 -right-24 h-56 w-56 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
                 style={{
                   background:
-                    "radial-gradient(closest-side, rgba(255,106,44,0.35), transparent)",
+                    "radial-gradient(closest-side, rgba(255,204,31,0.4), transparent)",
                 }}
               />
             </motion.div>

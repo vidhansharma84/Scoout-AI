@@ -29,7 +29,7 @@ export default function CameraView() {
   return (
     <div className="relative mx-auto w-full max-w-5xl">
       {/* outer device frame */}
-      <div className="relative rounded-3xl border border-border bg-gradient-to-b from-surface-2 to-surface p-3 sm:p-4 shadow-[0_40px_120px_-40px_rgba(255,106,44,0.35)]">
+      <div className="relative rounded-3xl border border-border bg-gradient-to-b from-surface-2 to-surface p-3 sm:p-4 shadow-[0_40px_120px_-40px_rgba(255,204,31,0.4)]">
         <div className="flex items-center justify-between px-3 pb-3">
           <div className="flex items-center gap-2">
             <div className="flex gap-1.5">

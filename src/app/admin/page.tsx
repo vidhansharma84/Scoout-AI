@@ -51,7 +51,7 @@ export default async function AdminPage() {
           <div className="flex gap-3">
             <a
               href="/admin/export"
-              className="btn-shine inline-flex items-center gap-2 rounded-full bg-accent text-background px-5 py-2.5 text-sm font-medium glow-orange hover:bg-accent-2 transition-colors"
+              className="btn-shine inline-flex items-center gap-2 rounded-full bg-accent text-background px-5 py-2.5 text-sm font-medium glow-yellow hover:bg-accent-2 transition-colors"
             >
               Export CSV
               <span aria-hidden>↓</span>

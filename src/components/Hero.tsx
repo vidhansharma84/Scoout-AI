@@ -28,7 +28,7 @@ export default function Hero() {
         className="absolute inset-0 -z-10"
         style={{
           background:
-            "radial-gradient(900px 500px at 50% 0%, rgba(255,106,44,0.18), transparent 60%), radial-gradient(700px 400px at 80% 30%, rgba(255,209,102,0.10), transparent 60%)",
+            "radial-gradient(900px 500px at 50% 0%, rgba(255,204,31,0.20), transparent 60%), radial-gradient(700px 400px at 80% 30%, rgba(255,209,102,0.10), transparent 60%)",
         }}
       />
       {/* grid */}
@@ -106,7 +106,7 @@ export default function Hero() {
           >
             <a
               href="#request"
-              className="btn-shine group inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3.5 font-medium text-background hover:bg-accent-2 transition-colors glow-orange"
+              className="btn-shine group inline-flex items-center gap-2 rounded-full bg-accent px-6 py-3.5 font-medium text-background hover:bg-accent-2 transition-colors glow-yellow"
             >
               Request Demo
               <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span>

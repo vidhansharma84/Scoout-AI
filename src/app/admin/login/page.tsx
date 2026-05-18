@@ -14,7 +14,7 @@ export default function LoginPage() {
         className="absolute inset-0 -z-10"
         style={{
           background:
-            "radial-gradient(700px 400px at 50% 20%, rgba(255,106,44,0.16), transparent 60%), radial-gradient(500px 300px at 50% 90%, rgba(255,209,102,0.08), transparent 60%)",
+            "radial-gradient(700px 400px at 50% 20%, rgba(255,204,31,0.18), transparent 60%), radial-gradient(500px 300px at 50% 90%, rgba(255,209,102,0.08), transparent 60%)",
         }}
       />
       <div
@@ -93,7 +93,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={submitting}
-            className="btn-shine w-full inline-flex items-center justify-center gap-2 rounded-full bg-accent text-background px-5 py-3 font-medium glow-orange hover:bg-accent-2 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+            className="btn-shine w-full inline-flex items-center justify-center gap-2 rounded-full bg-accent text-background px-5 py-3 font-medium glow-yellow hover:bg-accent-2 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
           >
             {submitting ? "Signing in…" : "Sign in"}
             <span aria-hidden>→</span>

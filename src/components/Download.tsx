@@ -10,7 +10,7 @@ export default function Download() {
           <div
             aria-hidden
             className="absolute -top-32 -right-32 h-80 w-80 rounded-full opacity-60 blur-3xl"
-            style={{ background: "radial-gradient(circle, rgba(255,106,44,0.45), transparent 60%)" }}
+            style={{ background: "radial-gradient(circle, rgba(255,204,31,0.5), transparent 60%)" }}
           />
 
           <div className="grid gap-10 lg:grid-cols-12 lg:items-center relative">

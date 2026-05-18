@@ -54,7 +54,7 @@ export default function Alerts() {
 function PhoneMock() {
   return (
     <div className="relative mx-auto w-[280px] sm:w-[320px]">
-      <div className="relative rounded-[42px] border border-border bg-gradient-to-b from-surface-2 to-surface p-2 shadow-[0_30px_120px_-30px_rgba(255,106,44,0.4)]">
+      <div className="relative rounded-[42px] border border-border bg-gradient-to-b from-surface-2 to-surface p-2 shadow-[0_30px_120px_-30px_rgba(255,204,31,0.45)]">
         <div className="absolute left-1/2 top-2 -translate-x-1/2 h-5 w-24 rounded-full bg-background/80 z-10" />
         <div className="aspect-[9/19] overflow-hidden rounded-[34px] bg-background relative">
           {/* status bar */}

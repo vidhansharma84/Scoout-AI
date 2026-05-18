@@ -1,11 +1,11 @@
 import Logo from "./Logo";
 
 const socials = [
-  { name: "LinkedIn", href: "#" },
-  { name: "Facebook", href: "#" },
-  { name: "Twitter / X", href: "#" },
-  { name: "Instagram", href: "#" },
-  { name: "TikTok", href: "#" },
+  { name: "LinkedIn", href: "https://www.linkedin.com/company/linkedin.com.scout.com.co/" },
+  { name: "Facebook", href: "https://www.facebook.com/share/1Eu8RGN5QC/?mibextid=wwXIfr" },
+  { name: "Twitter / X", href: "https://x.com/scooutai?s=11" },
+  { name: "Instagram", href: "https://www.instagram.com/scoout.ai?igsh=MWg3M2VwMXB3NnR2YQ%3D%3D&utm_source=qr" },
+  { name: "TikTok", href: "https://www.tiktok.com/@scoout.ai?_r=1&_t=ZS-96NzPGRfWUf" },
 ];
 
 export default function Footer() {
@@ -45,7 +45,14 @@ export default function Footer() {
             <ul className="mt-4 space-y-2 text-foreground/80">
               {socials.map((s) => (
                 <li key={s.name}>
-                  <a href={s.href} className="hover:text-foreground">{s.name}</a>
+                  <a
+                    href={s.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="hover:text-foreground"
+                  >
+                    {s.name}
+                  </a>
                 </li>
               ))}
             </ul>

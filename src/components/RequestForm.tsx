@@ -112,7 +112,7 @@ export default function RequestForm() {
                     <button
                       type="submit"
                       disabled={submitting}
-                      className="btn-shine inline-flex items-center justify-center gap-2 rounded-full bg-accent text-background px-6 py-3.5 font-medium glow-orange hover:bg-accent-2 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                      className="btn-shine inline-flex items-center justify-center gap-2 rounded-full bg-accent text-background px-6 py-3.5 font-medium glow-yellow hover:bg-accent-2 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
                     >
                       {submitting ? "Sending…" : "Request access"}
                       <span aria-hidden>→</span>
