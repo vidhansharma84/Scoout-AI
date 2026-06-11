@@ -82,6 +82,20 @@ export default function CameraView() {
           {/* corner brackets */}
           <CornerBrackets />
 
+          {/* active scan-line sweep — the "AI is watching" cue */}
+          <motion.div
+            aria-hidden
+            initial={{ y: "-10%" }}
+            animate={{ y: "110%" }}
+            transition={{ duration: 3.2, ease: "linear", repeat: Infinity }}
+            className="pointer-events-none absolute inset-x-0 h-[2px] z-10"
+            style={{
+              background:
+                "linear-gradient(90deg, transparent, rgba(255,204,31,0.85), transparent)",
+              boxShadow: "0 0 14px rgba(255,204,31,0.6)",
+            }}
+          />
+
           {/* boxes */}
           {boxes.map((b) => (
             <Detection key={b.label} {...b} />
@@ -164,9 +178,11 @@ function Detection({ label, conf, top, left, w, h, color, delay }: Box) {
       className="absolute"
       style={{ top, left, width: w, height: h }}
     >
-      <div
+      <motion.div
         className="absolute inset-0 rounded-[3px]"
         style={{ boxShadow: `inset 0 0 0 1.5px ${c}, 0 0 24px -6px ${c}` }}
+        animate={{ opacity: [1, 0.55, 1] }}
+        transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut", delay: delay + 0.3 }}
       />
       {/* corner ticks */}
       {([
