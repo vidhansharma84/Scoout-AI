@@ -1,0 +1,142 @@
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import CameraLive from "@/components/portal/CameraLive";
+import {
+  ALERTS,
+  CAMERAS,
+  severityClasses,
+  statusColor,
+  timeAgo,
+} from "@/lib/portal-mocks";
+
+type Params = { id: string };
+
+export default async function CameraDetailPage({
+  params,
+}: {
+  params: Promise<Params>;
+}) {
+  const { id } = await params;
+  const cam = CAMERAS.find((c) => c.id === id);
+  if (!cam) notFound();
+
+  const events = ALERTS.filter((a) => a.cameraId === cam.id);
+  const dotColor = statusColor(cam.status);
+  const isOffline = cam.status === "offline";
+
+  return (
+    <div className="px-4 sm:px-6 lg:px-10 py-8">
+      <nav className="mb-4 text-sm">
+        <Link
+          href="/portal/cameras"
+          className="text-foreground/55 hover:text-foreground transition-colors"
+        >
+          Cameras
+        </Link>
+        <span className="mx-2 text-foreground/30">/</span>
+        <span className="text-foreground">{cam.name}</span>
+      </nav>
+
+      <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/55">
+            / camera · {cam.id}
+          </p>
+          <h1 className="mt-2 font-display text-3xl sm:text-4xl font-semibold flex items-center gap-3">
+            {cam.location}
+            <span
+              className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface/60 px-2 py-0.5 text-xs font-medium text-foreground/75 uppercase tracking-wider"
+              style={{ borderColor: `${dotColor}55` }}
+            >
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${isOffline ? "" : "blink"}`}
+                style={{ background: dotColor }}
+              />
+              {cam.status}
+            </span>
+          </h1>
+          <p className="mt-1 text-sm text-foreground/60">
+            {cam.resolution} · {cam.fps}fps · {cam.detections} detections last 24h
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 hover:bg-surface px-4 py-2 text-sm transition-colors">
+            Snapshot
+          </button>
+          <button className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 hover:bg-surface px-4 py-2 text-sm transition-colors">
+            Edit
+          </button>
+          <button className="btn-shine inline-flex items-center gap-2 rounded-full bg-accent text-background px-4 py-2 text-sm font-medium glow-yellow hover:bg-accent-2 transition-colors">
+            Add rule
+          </button>
+        </div>
+      </header>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <CameraLive camera={cam} />
+
+          {/* meta strip */}
+          <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+            <Meta label="Model" value="Scoout v3.2" />
+            <Meta label="p95 latency" value="38 ms" />
+            <Meta label="Stream" value="RTSP · h.264" />
+            <Meta label="Recording" value="14 days · cloud" />
+          </div>
+        </div>
+
+        <div className="lg:col-span-1">
+          <div className="rounded-2xl border border-border bg-surface/40 p-4">
+            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/55">
+              / events
+            </p>
+            <h3 className="font-display text-lg font-semibold mt-1 mb-4">
+              On this camera
+            </h3>
+
+            {events.length === 0 && (
+              <p className="text-sm text-foreground/55 text-center py-8">
+                No alerts on this camera yet. The AI is watching.
+              </p>
+            )}
+
+            <ul className="space-y-3">
+              {events.map((e) => {
+                const sc = severityClasses(e.severity);
+                return (
+                  <li
+                    key={e.id}
+                    className={`rounded-xl border ${sc.border} ${sc.bg} px-3 py-2.5`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className={`text-sm font-semibold ${sc.text}`}>
+                        {e.type}
+                      </span>
+                      <span className="font-mono text-[10px] text-foreground/55">
+                        {timeAgo(e.at)}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-foreground/75 leading-snug line-clamp-3">
+                      {e.summary}
+                    </p>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function Meta({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-xl border border-border bg-surface/40 px-3 py-2.5">
+      <p className="font-mono text-[9px] uppercase tracking-[0.18em] text-foreground/45">
+        {label}
+      </p>
+      <p className="mt-1 text-sm font-medium">{value}</p>
+    </div>
+  );
+}
