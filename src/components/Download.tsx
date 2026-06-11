@@ -33,7 +33,8 @@ export default function Download() {
               <div className="mt-8 flex flex-col sm:flex-row gap-3">
                 <StoreBadge
                   store="App Store"
-                  caption="Download on the"
+                  caption="Coming soon to"
+                  href="/downloads/scoout-ai.apk"
                   icon={
                     <svg viewBox="0 0 24 24" className="h-7 w-7" fill="currentColor">
                       <path d="M16.365 1.43c0 1.14-.42 2.22-1.16 3.02-.83.91-2.18 1.61-3.27 1.52-.13-1.13.43-2.32 1.13-3.06.79-.85 2.16-1.49 3.3-1.48zm3.97 16.06c-.62 1.43-.92 2.06-1.72 3.32-1.11 1.74-2.68 3.91-4.62 3.93-1.72.02-2.16-1.13-4.49-1.12-2.33.02-2.81 1.14-4.54 1.12-1.94-.02-3.42-1.99-4.54-3.73-3.13-4.86-3.46-10.56-1.53-13.6 1.37-2.16 3.53-3.42 5.55-3.42 2.06 0 3.36 1.14 5.06 1.14 1.65 0 2.66-1.14 5.04-1.14 1.8 0 3.71.99 5.07 2.7-4.45 2.45-3.73 8.83.7 10.8z" />
@@ -42,7 +43,8 @@ export default function Download() {
                 />
                 <StoreBadge
                   store="Google Play"
-                  caption="Get it on"
+                  caption="Coming soon to"
+                  href="/downloads/scoout-ai.apk"
                   icon={
                     <svg viewBox="0 0 24 24" className="h-7 w-7" fill="currentColor">
                       <path d="M3.6 1.7c-.4.4-.6 1-.6 1.7v17.2c0 .7.2 1.3.6 1.7l9.5-10.3L3.6 1.7zm10.6 11.4l3 3-12 6.7c-.4.2-.8.2-1.1.1L14.2 13.1zm5-2.1l-3.4-1.9-3.6 3.9 3.6 4 3.4-1.9c1.1-.6 1.1-2.5 0-3.1zM14.2 12.9L5 2.5c.3-.1.7-.1 1.1.1l11.9 6.7-3.8 3.6z" />
@@ -50,6 +52,10 @@ export default function Download() {
                   }
                 />
               </div>
+              <p className="mt-4 text-xs text-foreground/50 font-mono uppercase tracking-[0.18em]">
+                <span className="inline-block h-1.5 w-1.5 rounded-full bg-accent mr-2 align-middle" />
+                Direct APK available now — tap any badge to download
+              </p>
             </div>
 
             <div className="lg:col-span-5 relative">
@@ -66,15 +72,17 @@ function StoreBadge({
   store,
   caption,
   icon,
+  href,
 }: {
   store: string;
   caption: string;
   icon: React.ReactNode;
+  href: string;
 }) {
   return (
     <a
-      href="#"
-      className="btn-shine group inline-flex items-center gap-3 rounded-2xl border border-border bg-background/80 backdrop-blur px-5 py-3 hover:border-foreground/30 transition-colors"
+      href={href}
+      className="btn-shine group inline-flex items-center gap-3 rounded-2xl border border-border bg-background/80 backdrop-blur px-5 py-3 hover:border-accent/40 hover:bg-background transition-colors"
     >
       <span className="text-foreground">{icon}</span>
       <span className="text-left">

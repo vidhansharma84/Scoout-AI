@@ -50,9 +50,21 @@ export default function Nav() {
                 {l.label}
               </a>
             ))}
+            <a
+              href="/portal/login"
+              className="relative hover:text-accent transition-colors"
+            >
+              Portal
+            </a>
           </nav>
 
           <div className="flex items-center gap-2">
+            <a
+              href="/portal/login"
+              className="hidden sm:inline-flex items-center gap-1.5 rounded-full border border-border bg-surface/50 hover:bg-surface px-4 py-2 text-sm font-medium text-foreground/85 hover:text-foreground transition-colors"
+            >
+              Sign in
+            </a>
             <a
               href="#request"
               className="btn-shine hidden sm:inline-flex items-center gap-2 rounded-full bg-foreground text-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-background transition-colors"
@@ -94,6 +106,22 @@ export default function Nav() {
                 </li>
               ))}
               <li>
+                <a
+                  href="/portal/login"
+                  onClick={() => setOpen(false)}
+                  className="block text-accent hover:text-accent-2 font-medium"
+                >
+                  Portal →
+                </a>
+              </li>
+              <li className="flex gap-2 pt-1">
+                <a
+                  href="/portal/login"
+                  onClick={() => setOpen(false)}
+                  className="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-4 py-2 text-sm font-medium"
+                >
+                  Sign in
+                </a>
                 <a
                   href="#request"
                   onClick={() => setOpen(false)}
