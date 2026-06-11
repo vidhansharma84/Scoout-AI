@@ -1,6 +1,7 @@
 import Hero from "@/components/Hero";
 import Brands from "@/components/Brands";
 import HowItWorks from "@/components/HowItWorks";
+import WatchFor from "@/components/WatchFor";
 import TrustedBy from "@/components/TrustedBy";
 import Alerts from "@/components/Alerts";
 import Download from "@/components/Download";
@@ -13,6 +14,7 @@ export default function Home() {
       <Hero />
       <Brands />
       <HowItWorks />
+      <WatchFor />
       <TrustedBy />
       <Alerts />
       <Download />
