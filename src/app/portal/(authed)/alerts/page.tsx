@@ -1,4 +1,5 @@
 import Link from "next/link";
+import AlertActions from "@/components/portal/AlertActions";
 import { ALERTS, severityClasses, timeAgo } from "@/lib/portal-mocks";
 
 const FILTERS = [
@@ -98,26 +99,7 @@ export default function AlertsPage() {
                   <p className="mt-1.5 text-sm text-foreground/75 leading-relaxed">
                     {a.summary}
                   </p>
-                  <div className="mt-2.5 flex items-center gap-2 text-xs">
-                    <button
-                      onClick={(e) => e.preventDefault()}
-                      className="rounded-md border border-border bg-surface px-2.5 py-1 hover:bg-surface-2 transition-colors"
-                    >
-                      Open clip
-                    </button>
-                    <button
-                      onClick={(e) => e.preventDefault()}
-                      className="rounded-md border border-border bg-surface px-2.5 py-1 hover:bg-surface-2 transition-colors text-foreground/65"
-                    >
-                      Mark reviewed
-                    </button>
-                    <button
-                      onClick={(e) => e.preventDefault()}
-                      className="rounded-md border border-border bg-surface px-2.5 py-1 hover:bg-surface-2 transition-colors text-foreground/55"
-                    >
-                      Dismiss
-                    </button>
-                  </div>
+                  <AlertActions />
                 </div>
               </div>
             </Link>
