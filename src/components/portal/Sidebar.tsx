@@ -2,8 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import Logo from "@/components/Logo";
 import { SHOP, USER, STATS } from "@/lib/portal-mocks";
+
+type Me = {
+  user: { name: string | null; email: string; initials: string | null };
+  shop: { name: string; city: string | null; plan: string };
+};
 
 const NAV: { href: string; label: string; icon: string; badge?: () => string }[] = [
   { href: "/portal", label: "Dashboard", icon: "▦" },
@@ -15,6 +21,18 @@ const NAV: { href: string; label: string; icon: string; badge?: () => string }[]
 
 export default function Sidebar() {
   const path = usePathname();
+  const [me, setMe] = useState<Me | null>(null);
+  useEffect(() => {
+    fetch("/api/v1/me")
+      .then((r) => (r.ok ? r.json() : null))
+      .then((d) => d && setMe(d))
+      .catch(() => {});
+  }, []);
+  const shopName = me?.shop.name ?? SHOP.name;
+  const shopCity = me?.shop.city ?? SHOP.city;
+  const userName = me?.user.name ?? USER.name;
+  const userEmail = me?.user.email ?? USER.email;
+  const userInitials = me?.user.initials ?? USER.initials;
   return (
     <aside className="hidden lg:flex lg:fixed lg:inset-y-0 lg:left-0 lg:w-64 flex-col border-r border-border bg-surface/40 backdrop-blur">
       <div className="px-5 py-5 flex items-center gap-3">
@@ -29,8 +47,8 @@ export default function Sidebar() {
 
       <div className="px-3 pb-4">
         <div className="rounded-xl border border-border bg-background/40 px-3 py-2.5">
-          <p className="text-sm font-medium truncate">{SHOP.name}</p>
-          <p className="text-[11px] text-foreground/55 mt-0.5">{SHOP.city}</p>
+          <p className="text-sm font-medium truncate">{shopName}</p>
+          <p className="text-[11px] text-foreground/55 mt-0.5">{shopCity}</p>
         </div>
       </div>
 
@@ -76,19 +94,22 @@ export default function Sidebar() {
       <div className="border-t border-border px-3 py-3">
         <div className="flex items-center gap-3 rounded-xl px-2.5 py-2">
           <div className="grid h-9 w-9 place-items-center rounded-full bg-accent/15 border border-accent/30 text-accent font-mono text-sm font-semibold">
-            {USER.initials}
+            {userInitials}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium truncate">{USER.name}</p>
-            <p className="text-[11px] text-foreground/55 truncate">{USER.email}</p>
+            <p className="text-sm font-medium truncate">{userName}</p>
+            <p className="text-[11px] text-foreground/55 truncate">{userEmail}</p>
           </div>
-          <Link
-            href="/portal/login"
+          <button
             title="Sign out"
+            onClick={async () => {
+              await fetch("/api/v1/auth/logout", { method: "POST" });
+              window.location.href = "/portal/login";
+            }}
             className="text-foreground/40 hover:text-foreground transition-colors text-sm"
           >
             ↗
-          </Link>
+          </button>
         </div>
       </div>
     </aside>
