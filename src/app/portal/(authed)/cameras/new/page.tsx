@@ -12,6 +12,7 @@ const PROTOCOLS = [
 export default function AddCameraPage() {
   const [protocol, setProtocol] = useState<(typeof PROTOCOLS)[number]["id"]>("rtsp");
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   return (
     <div className="px-4 sm:px-6 lg:px-10 py-8 max-w-3xl">
@@ -39,12 +40,34 @@ export default function AddCameraPage() {
       </header>
 
       <form
-        onSubmit={(e) => {
+        onSubmit={async (e) => {
           e.preventDefault();
+          if (submitting) return;
           setSubmitting(true);
-          setTimeout(() => {
-            window.location.href = "/portal/cameras";
-          }, 900);
+          setError(null);
+          const fd = new FormData(e.currentTarget);
+          try {
+            const res = await fetch("/api/v1/cameras", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                name: fd.get("name"),
+                location: fd.get("location"),
+                streamUrl: fd.get("streamUrl"),
+                protocol,
+              }),
+            });
+            if (res.ok) {
+              window.location.href = "/portal/cameras";
+            } else {
+              const data = await res.json().catch(() => ({}));
+              setError(data?.error ?? "Could not connect camera");
+              setSubmitting(false);
+            }
+          } catch {
+            setError("Network error. Please try again.");
+            setSubmitting(false);
+          }
         }}
         className="rounded-3xl border border-border bg-surface/50 p-6 sm:p-8 space-y-7"
       >
@@ -107,6 +130,12 @@ export default function AddCameraPage() {
             </label>
           </div>
         </Section>
+
+        {error && (
+          <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5">
+            {error}
+          </p>
+        )}
 
         <div className="flex items-center justify-between pt-2 border-t border-border">
           <p className="text-xs text-foreground/50">

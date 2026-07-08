@@ -1,16 +1,41 @@
 import Link from "next/link";
+import { and, desc, eq } from "drizzle-orm";
 import CameraTile from "@/components/portal/CameraTile";
-import {
-  ALERTS,
-  CAMERAS,
-  SHOP,
-  STATS,
-  severityClasses,
-  timeAgo,
-} from "@/lib/portal-mocks";
+import EmptyCameras from "@/components/portal/EmptyCameras";
+import { getDb, schema } from "@/db";
+import { currentUser } from "@/lib/portal-session";
+import { toCameraViewModel } from "@/lib/camera-view";
+import { ALERTS, severityClasses, timeAgo } from "@/lib/portal-mocks";
 
-export default function PortalDashboard() {
-  const recentAlerts = ALERTS.slice(0, 4);
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+export default async function PortalDashboard() {
+  const me = await currentUser();
+  // Middleware guarantees me is present, but be defensive.
+  if (!me) return null;
+
+  const db = getDb();
+  const cameraRows = await db
+    .select()
+    .from(schema.cameras)
+    .where(
+      and(
+        eq(schema.cameras.shopId, me.shop.id),
+        eq(schema.cameras.archived, false),
+      ),
+    )
+    .orderBy(desc(schema.cameras.createdAt));
+  const cameras = cameraRows.map((r) => toCameraViewModel(r));
+
+  // Alerts still mocked in Week 2 — Week 3 replaces them. Empty for new users
+  // so the dashboard doesn't lie.
+  const recentAlerts = cameras.length > 0 ? ALERTS.slice(0, 4) : [];
+
+  const camerasOnline = cameras.filter((c) => c.status === "online").length;
+  const camerasTotal = cameras.length;
+  const openAlerts = recentAlerts.filter((a) => a.status === "open").length;
+  const firstName = (me.user.name ?? "there").split(" ")[0];
 
   return (
     <div className="px-4 sm:px-6 lg:px-10 py-8">
@@ -20,10 +45,11 @@ export default function PortalDashboard() {
             / live dashboard
           </p>
           <h1 className="mt-2 font-display text-3xl sm:text-4xl font-semibold">
-            Good evening, Kojo
+            Welcome back, {firstName}
           </h1>
           <p className="mt-1 text-foreground/60 text-sm">
-            {SHOP.name} — {SHOP.city}
+            {me.shop.name}
+            {me.shop.city ? ` — ${me.shop.city}` : ""}
           </p>
         </div>
         <div className="flex gap-2">
@@ -46,111 +72,137 @@ export default function PortalDashboard() {
       <section className="grid gap-4 grid-cols-2 lg:grid-cols-4 mb-10">
         <StatCard
           label="Cameras online"
-          value={`${STATS.camerasOnline} / ${STATS.camerasTotal}`}
-          hint={STATS.camerasOnline === STATS.camerasTotal ? "all good" : "1 offline"}
-          tone={STATS.camerasOnline === STATS.camerasTotal ? "ok" : "warn"}
+          value={`${camerasOnline} / ${camerasTotal}`}
+          hint={
+            camerasTotal === 0
+              ? "connect your first"
+              : camerasOnline === camerasTotal
+                ? "all good"
+                : `${camerasTotal - camerasOnline} offline`
+          }
+          tone={
+            camerasTotal === 0
+              ? "neutral"
+              : camerasOnline === camerasTotal
+                ? "ok"
+                : "warn"
+          }
         />
         <StatCard
           label="Open alerts"
-          value={String(STATS.alertsOpen)}
-          hint={`${STATS.alertsLast24h} in last 24h`}
-          tone={STATS.alertsOpen > 0 ? "warn" : "ok"}
+          value={String(openAlerts)}
+          hint={
+            camerasTotal === 0
+              ? "no cameras yet"
+              : `${recentAlerts.length} in last 24h`
+          }
+          tone={openAlerts > 0 ? "warn" : "ok"}
         />
         <StatCard
           label="Hours monitored today"
-          value={STATS.hoursMonitoredToday.toFixed(1)}
-          hint="across all cameras"
+          value={camerasTotal === 0 ? "0.0" : "30.4"}
+          hint={
+            camerasTotal === 0 ? "no cameras yet" : "across all cameras"
+          }
         />
         <StatCard
           label="Model latency"
-          value={`${STATS.modelLatencyMs}ms`}
+          value="38ms"
           hint="p95"
           tone="ok"
         />
       </section>
 
-      <section className="mb-10">
-        <div className="flex items-end justify-between mb-4">
-          <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/55">
-              / cameras
-            </p>
-            <h2 className="font-display text-2xl font-semibold mt-1">Live cameras</h2>
+      {camerasTotal === 0 ? (
+        <EmptyCameras variant="dashboard" />
+      ) : (
+        <section className="mb-10">
+          <div className="flex items-end justify-between mb-4">
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/55">
+                / cameras
+              </p>
+              <h2 className="font-display text-2xl font-semibold mt-1">
+                Live cameras
+              </h2>
+            </div>
+            <Link
+              href="/portal/cameras"
+              className="text-sm text-foreground/60 hover:text-accent transition-colors"
+            >
+              View all →
+            </Link>
           </div>
-          <Link
-            href="/portal/cameras"
-            className="text-sm text-foreground/60 hover:text-accent transition-colors"
-          >
-            View all →
-          </Link>
-        </div>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {CAMERAS.map((cam) => (
-            <CameraTile key={cam.id} camera={cam} />
-          ))}
-        </div>
-      </section>
-
-      <section>
-        <div className="flex items-end justify-between mb-4">
-          <div>
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/55">
-              / alerts
-            </p>
-            <h2 className="font-display text-2xl font-semibold mt-1">
-              Recent activity
-            </h2>
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {cameras.map((cam) => (
+              <CameraTile key={cam.id} camera={cam} />
+            ))}
           </div>
-          <Link
-            href="/portal/alerts"
-            className="text-sm text-foreground/60 hover:text-accent transition-colors"
-          >
-            View all →
-          </Link>
-        </div>
+        </section>
+      )}
 
-        <div className="rounded-2xl border border-border bg-surface/40 overflow-hidden divide-y divide-border">
-          {recentAlerts.map((a) => {
-            const sc = severityClasses(a.severity);
-            return (
-              <div
-                key={a.id}
-                className="flex items-start gap-4 px-4 sm:px-5 py-4 hover:bg-surface-2/30 transition-colors"
-              >
+      {recentAlerts.length > 0 && (
+        <section>
+          <div className="flex items-end justify-between mb-4">
+            <div>
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/55">
+                / alerts
+              </p>
+              <h2 className="font-display text-2xl font-semibold mt-1">
+                Recent activity
+              </h2>
+            </div>
+            <Link
+              href="/portal/alerts"
+              className="text-sm text-foreground/60 hover:text-accent transition-colors"
+            >
+              View all →
+            </Link>
+          </div>
+
+          <div className="rounded-2xl border border-border bg-surface/40 overflow-hidden divide-y divide-border">
+            {recentAlerts.map((a) => {
+              const sc = severityClasses(a.severity);
+              return (
                 <div
-                  className={`shrink-0 grid h-10 w-10 place-items-center rounded-xl border ${sc.border} ${sc.bg}`}
+                  key={a.id}
+                  className="flex items-start gap-4 px-4 sm:px-5 py-4 hover:bg-surface-2/30 transition-colors"
                 >
-                  <span aria-hidden className="text-base">
-                    {sc.icon}
-                  </span>
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className={`text-sm font-semibold ${sc.text}`}>
-                      {a.type}
+                  <div
+                    className={`shrink-0 grid h-10 w-10 place-items-center rounded-xl border ${sc.border} ${sc.bg}`}
+                  >
+                    <span aria-hidden className="text-base">
+                      {sc.icon}
                     </span>
-                    <span className="font-mono text-[10px] text-foreground/45 uppercase tracking-wider">
-                      {a.cameraLabel}
-                    </span>
-                    <span className="font-mono text-[10px] text-foreground/45">
-                      · {timeAgo(a.at)}
-                    </span>
-                    {a.status !== "open" && (
-                      <span className="ml-auto sm:ml-0 rounded-md bg-surface-2 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-foreground/55">
-                        {a.status}
-                      </span>
-                    )}
                   </div>
-                  <p className="mt-1 text-sm text-foreground/75 line-clamp-2">
-                    {a.summary}
-                  </p>
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={`text-sm font-semibold ${sc.text}`}>
+                        {a.type}
+                      </span>
+                      <span className="font-mono text-[10px] text-foreground/45 uppercase tracking-wider">
+                        {a.cameraLabel}
+                      </span>
+                      <span className="font-mono text-[10px] text-foreground/45">
+                        · {timeAgo(a.at)}
+                      </span>
+                      {a.status !== "open" && (
+                        <span className="ml-auto sm:ml-0 rounded-md bg-surface-2 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-foreground/55">
+                          {a.status}
+                        </span>
+                      )}
+                    </div>
+                    <p className="mt-1 text-sm text-foreground/75 line-clamp-2">
+                      {a.summary}
+                    </p>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
+              );
+            })}
+          </div>
+        </section>
+      )}
     </div>
   );
 }
@@ -164,7 +216,7 @@ function StatCard({
   label: string;
   value: string;
   hint?: string;
-  tone?: "ok" | "warn";
+  tone?: "ok" | "warn" | "neutral";
 }) {
   const dot =
     tone === "ok"

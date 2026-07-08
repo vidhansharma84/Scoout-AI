@@ -86,7 +86,25 @@ export const cameras = pgTable(
   (t) => [index("cameras_shop_id_idx").on(t.shopId)],
 );
 
+export const rules = pgTable(
+  "rules",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    shopId: uuid("shop_id")
+      .notNull()
+      .references(() => shops.id, { onDelete: "cascade" }),
+    prompt: text("prompt").notNull(),
+    active: boolean("active").notNull().default(true),
+    // camera ids this rule applies to; empty array = every camera in the shop
+    cameras: uuid("cameras").array().notNull().default(sql`ARRAY[]::uuid[]`),
+    createdBy: uuid("created_by").references(() => users.id, { onDelete: "set null" }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [index("rules_shop_id_idx").on(t.shopId)],
+);
+
 export type Shop = typeof shops.$inferSelect;
 export type User = typeof users.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
 export type Camera = typeof cameras.$inferSelect;
+export type Rule = typeof rules.$inferSelect;

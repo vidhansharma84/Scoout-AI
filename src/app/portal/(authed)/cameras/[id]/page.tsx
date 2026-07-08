@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { and, eq } from "drizzle-orm";
 import CameraLive from "@/components/portal/CameraLive";
-import {
-  ALERTS,
-  CAMERAS,
-  severityClasses,
-  statusColor,
-  timeAgo,
-} from "@/lib/portal-mocks";
+import { getDb, schema } from "@/db";
+import { currentUser } from "@/lib/portal-session";
+import { toCameraViewModel } from "@/lib/camera-view";
+import { statusColor } from "@/lib/portal-mocks";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 type Params = { id: string };
 
@@ -17,12 +18,29 @@ export default async function CameraDetailPage({
   params: Promise<Params>;
 }) {
   const { id } = await params;
-  const cam = CAMERAS.find((c) => c.id === id);
-  if (!cam) notFound();
+  const me = await currentUser();
+  if (!me) return null;
 
-  const events = ALERTS.filter((a) => a.cameraId === cam.id);
+  const db = getDb();
+  const [row] = await db
+    .select()
+    .from(schema.cameras)
+    .where(
+      and(
+        eq(schema.cameras.id, id),
+        eq(schema.cameras.shopId, me.shop.id),
+        eq(schema.cameras.archived, false),
+      ),
+    )
+    .limit(1);
+  if (!row) notFound();
+
+  const cam = toCameraViewModel(row);
   const dotColor = statusColor(cam.status);
   const isOffline = cam.status === "offline";
+
+  // Events land in Week 3. For now show the "AI is watching" empty state.
+  const events: never[] = [];
 
   return (
     <div className="px-4 sm:px-6 lg:px-10 py-8">
@@ -40,10 +58,10 @@ export default async function CameraDetailPage({
       <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
         <div>
           <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/55">
-            / camera · {cam.id}
+            / camera · {cam.name}
           </p>
           <h1 className="mt-2 font-display text-3xl sm:text-4xl font-semibold flex items-center gap-3">
-            {cam.location}
+            {cam.location || cam.name}
             <span
               className="inline-flex items-center gap-1.5 rounded-full border border-border bg-surface/60 px-2 py-0.5 text-xs font-medium text-foreground/75 uppercase tracking-wider"
               style={{ borderColor: `${dotColor}55` }}
@@ -56,7 +74,7 @@ export default async function CameraDetailPage({
             </span>
           </h1>
           <p className="mt-1 text-sm text-foreground/60">
-            {cam.resolution} · {cam.fps}fps · {cam.detections} detections last 24h
+            {cam.resolution} · {cam.fps}fps · {row.protocol.toUpperCase()}
           </p>
         </div>
         <div className="flex gap-2">
@@ -75,12 +93,10 @@ export default async function CameraDetailPage({
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
           <CameraLive camera={cam} />
-
-          {/* meta strip */}
           <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
             <Meta label="Model" value="Scoout v3.2" />
-            <Meta label="p95 latency" value="38 ms" />
-            <Meta label="Stream" value="RTSP · h.264" />
+            <Meta label="p95 latency" value="—" />
+            <Meta label="Stream" value={`${row.protocol.toUpperCase()} · h.264`} />
             <Meta label="Recording" value="14 days · cloud" />
           </div>
         </div>
@@ -99,30 +115,6 @@ export default async function CameraDetailPage({
                 No alerts on this camera yet. The AI is watching.
               </p>
             )}
-
-            <ul className="space-y-3">
-              {events.map((e) => {
-                const sc = severityClasses(e.severity);
-                return (
-                  <li
-                    key={e.id}
-                    className={`rounded-xl border ${sc.border} ${sc.bg} px-3 py-2.5`}
-                  >
-                    <div className="flex items-center justify-between gap-2">
-                      <span className={`text-sm font-semibold ${sc.text}`}>
-                        {e.type}
-                      </span>
-                      <span className="font-mono text-[10px] text-foreground/55">
-                        {timeAgo(e.at)}
-                      </span>
-                    </div>
-                    <p className="mt-1 text-xs text-foreground/75 leading-snug line-clamp-3">
-                      {e.summary}
-                    </p>
-                  </li>
-                );
-              })}
-            </ul>
           </div>
         </div>
       </div>
