@@ -1,11 +1,15 @@
 import Link from "next/link";
-import { and, desc, eq } from "drizzle-orm";
+import { and, desc, eq, sql } from "drizzle-orm";
 import CameraTile from "@/components/portal/CameraTile";
 import EmptyCameras from "@/components/portal/EmptyCameras";
 import { getDb, schema } from "@/db";
 import { currentUser } from "@/lib/portal-session";
 import { toCameraViewModel } from "@/lib/camera-view";
-import { ALERTS, severityClasses, timeAgo } from "@/lib/portal-mocks";
+import {
+  type AlertViewSeverity,
+  severityClasses,
+  timeAgo,
+} from "@/lib/alert-view";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,13 +32,50 @@ export default async function PortalDashboard() {
     .orderBy(desc(schema.cameras.createdAt));
   const cameras = cameraRows.map((r) => toCameraViewModel(r));
 
-  // Alerts still mocked in Week 2 — Week 3 replaces them. Empty for new users
-  // so the dashboard doesn't lie.
-  const recentAlerts = cameras.length > 0 ? ALERTS.slice(0, 4) : [];
+  const alertRows = await db
+    .select({
+      id: schema.alerts.id,
+      cameraId: schema.alerts.cameraId,
+      type: schema.alerts.type,
+      severity: schema.alerts.severity,
+      summary: schema.alerts.summary,
+      status: schema.alerts.status,
+      at: schema.alerts.at,
+      cameraName: schema.cameras.name,
+      cameraLocation: schema.cameras.location,
+    })
+    .from(schema.alerts)
+    .leftJoin(schema.cameras, eq(schema.cameras.id, schema.alerts.cameraId))
+    .where(eq(schema.alerts.shopId, me.shop.id))
+    .orderBy(desc(schema.alerts.at))
+    .limit(4);
+  const recentAlerts = alertRows.map((a) => ({
+    id: a.id,
+    cameraId: a.cameraId,
+    cameraLabel:
+      a.cameraName != null
+        ? a.cameraName + (a.cameraLocation ? " · " + a.cameraLocation : "")
+        : "Unknown camera",
+    type: a.type,
+    severity: a.severity as AlertViewSeverity,
+    summary: a.summary,
+    status: a.status,
+    at: a.at,
+  }));
+
+  // Aggregate counts for stat cards
+  const [alertCounts] = await db
+    .select({
+      open: sql<number>`count(*) filter (where ${schema.alerts.status} = 'open')::int`,
+      last24: sql<number>`count(*) filter (where ${schema.alerts.at} > now() - interval '24 hours')::int`,
+    })
+    .from(schema.alerts)
+    .where(eq(schema.alerts.shopId, me.shop.id));
 
   const camerasOnline = cameras.filter((c) => c.status === "online").length;
   const camerasTotal = cameras.length;
-  const openAlerts = recentAlerts.filter((a) => a.status === "open").length;
+  const openAlerts = alertCounts?.open ?? 0;
+  const alertsLast24h = alertCounts?.last24 ?? 0;
   const firstName = (me.user.name ?? "there").split(" ")[0];
 
   return (
@@ -94,7 +135,7 @@ export default async function PortalDashboard() {
           hint={
             camerasTotal === 0
               ? "no cameras yet"
-              : `${recentAlerts.length} in last 24h`
+              : `${alertsLast24h} in last 24h`
           }
           tone={openAlerts > 0 ? "warn" : "ok"}
         />
@@ -185,7 +226,7 @@ export default async function PortalDashboard() {
                         {a.cameraLabel}
                       </span>
                       <span className="font-mono text-[10px] text-foreground/45">
-                        · {timeAgo(a.at)}
+                        · {timeAgo(a.at as unknown as string)}
                       </span>
                       {a.status !== "open" && (
                         <span className="ml-auto sm:ml-0 rounded-md bg-surface-2 px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-foreground/55">

@@ -1,11 +1,16 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import CameraLive from "@/components/portal/CameraLive";
 import { getDb, schema } from "@/db";
 import { currentUser } from "@/lib/portal-session";
 import { toCameraViewModel } from "@/lib/camera-view";
 import { statusColor } from "@/lib/portal-mocks";
+import {
+  type AlertViewSeverity,
+  severityClasses,
+  timeAgo,
+} from "@/lib/alert-view";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -39,8 +44,18 @@ export default async function CameraDetailPage({
   const dotColor = statusColor(cam.status);
   const isOffline = cam.status === "offline";
 
-  // Events land in Week 3. For now show the "AI is watching" empty state.
-  const events: never[] = [];
+  const events = await db
+    .select({
+      id: schema.alerts.id,
+      type: schema.alerts.type,
+      severity: schema.alerts.severity,
+      summary: schema.alerts.summary,
+      at: schema.alerts.at,
+    })
+    .from(schema.alerts)
+    .where(eq(schema.alerts.cameraId, row.id))
+    .orderBy(desc(schema.alerts.at))
+    .limit(20);
 
   return (
     <div className="px-4 sm:px-6 lg:px-10 py-8">
@@ -110,10 +125,34 @@ export default async function CameraDetailPage({
               On this camera
             </h3>
 
-            {events.length === 0 && (
+            {events.length === 0 ? (
               <p className="text-sm text-foreground/55 text-center py-8">
                 No alerts on this camera yet. The AI is watching.
               </p>
+            ) : (
+              <ul className="space-y-3">
+                {events.map((e) => {
+                  const sc = severityClasses(e.severity as AlertViewSeverity);
+                  return (
+                    <li
+                      key={e.id}
+                      className={`rounded-xl border ${sc.border} ${sc.bg} px-3 py-2.5`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <span className={`text-sm font-semibold ${sc.text}`}>
+                          {e.type}
+                        </span>
+                        <span className="font-mono text-[10px] text-foreground/55">
+                          {timeAgo(e.at as unknown as string)}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs text-foreground/75 leading-snug line-clamp-3">
+                        {e.summary}
+                      </p>
+                    </li>
+                  );
+                })}
+              </ul>
             )}
           </div>
         </div>
