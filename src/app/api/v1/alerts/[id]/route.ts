@@ -5,6 +5,7 @@ import { NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { currentUser } from "@/lib/portal-session";
+import { signDownloadUrl } from "@/lib/clip-storage";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -28,7 +29,28 @@ export async function GET(_req: Request, { params }: { params: Promise<{ id: str
   const { id } = await params;
   const alert = await loadOwned(me.shop.id, id);
   if (!alert) return NextResponse.json({ error: "Not found" }, { status: 404 });
-  return NextResponse.json({ alert });
+
+  // Include shop-scoped camera label + a signed clip/thumbnail URL if we have keys.
+  const db = getDb();
+  let cameraLabel = "Unknown camera";
+  if (alert.cameraId) {
+    const [cam] = await db
+      .select({ name: schema.cameras.name, location: schema.cameras.location })
+      .from(schema.cameras)
+      .where(eq(schema.cameras.id, alert.cameraId))
+      .limit(1);
+    if (cam) {
+      cameraLabel = cam.name + (cam.location ? ` · ${cam.location}` : "");
+    }
+  }
+  const clipUrl = alert.clipKey ? await signDownloadUrl(alert.clipKey, 3600) : null;
+  const thumbnailUrl = alert.thumbnailKey
+    ? await signDownloadUrl(alert.thumbnailKey, 3600)
+    : null;
+
+  return NextResponse.json({
+    alert: { ...alert, cameraLabel, clipUrl, thumbnailUrl },
+  });
 }
 
 export async function PATCH(

@@ -138,7 +138,7 @@ function AlertRow({
   onMutate: (id: string, status: AlertViewStatus) => void;
 }) {
   const sc = severityClasses(a.severity as AlertViewSeverity);
-  const href = a.cameraId ? `/portal/cameras/${a.cameraId}` : "#";
+  const href = `/portal/alerts/${a.id}`;
   return (
     <div className="flex items-start gap-4 px-4 sm:px-5 py-4 hover:bg-surface-2/30 transition-colors">
       <div
@@ -175,7 +175,7 @@ function AlertRow({
             href={href}
             className="rounded-md border border-border bg-surface px-2.5 py-1 hover:bg-surface-2 transition-colors"
           >
-            Open camera
+            Open clip
           </Link>
           {a.status !== "reviewed" && (
             <button

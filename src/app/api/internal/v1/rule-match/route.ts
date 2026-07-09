@@ -67,6 +67,8 @@ export async function POST(req: Request) {
   const type = clip(body.type, 80) || defaultTypeFor(det.class);
   const severity = clip(body.severity, 16) || defaultSeverityFor(det.class);
   const reasoning = clip(body.reasoning, 1000) || null;
+  const clipKey = clip(body.clipKey, 200) || null;
+  const thumbnailKey = clip(body.thumbnailKey, 200) || det.thumbnailKey;
   const summary =
     clip(body.summary, 800) ||
     defaultSummary({
@@ -87,7 +89,8 @@ export async function POST(req: Request) {
       severity: normalizeSeverity(severity),
       summary,
       reasoning,
-      thumbnailKey: det.thumbnailKey,
+      clipKey,
+      thumbnailKey,
       at: det.at,
     })
     .returning();
