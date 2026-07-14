@@ -16,6 +16,7 @@ const NAV: { href: string; label: string; icon: string; badge?: () => string }[]
   { href: "/portal/cameras", label: "Cameras", icon: "◉", badge: () => `${STATS.camerasOnline}/${STATS.camerasTotal}` },
   { href: "/portal/alerts", label: "Alerts", icon: "⚑", badge: () => String(STATS.alertsOpen) },
   { href: "/portal/watchlist", label: "Watchlist", icon: "❖" },
+  { href: "/portal/team", label: "Team", icon: "◈" },
   { href: "/portal/settings", label: "Settings", icon: "⚙" },
 ];
 

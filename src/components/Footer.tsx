@@ -95,7 +95,14 @@ export default function Footer() {
 
         <div className="mt-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs text-foreground/50 font-mono uppercase tracking-[0.2em]">
           <span>© 2026 Scoout AI. All rights reserved.</span>
-          <span>Built for businesses that don&apos;t sleep.</span>
+          <div className="flex items-center gap-5">
+            <a href="/legal/terms" className="hover:text-foreground transition-colors">
+              Terms
+            </a>
+            <a href="/legal/privacy" className="hover:text-foreground transition-colors">
+              Privacy
+            </a>
+          </div>
         </div>
       </div>
     </footer>

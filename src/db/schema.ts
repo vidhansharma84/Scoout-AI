@@ -168,6 +168,26 @@ export const cameraHealth = pgTable("camera_health", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
+export const teamInvites = pgTable(
+  "team_invites",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    shopId: uuid("shop_id")
+      .notNull()
+      .references(() => shops.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    role: text("role").notNull().default("reviewer"),
+    token: text("token").notNull().unique(),
+    invitedBy: uuid("invited_by").references(() => users.id, {
+      onDelete: "set null",
+    }),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    acceptedAt: timestamp("accepted_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [index("team_invites_shop_idx").on(t.shopId)],
+);
+
 export type Shop = typeof shops.$inferSelect;
 export type User = typeof users.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
@@ -176,3 +196,4 @@ export type Rule = typeof rules.$inferSelect;
 export type Detection = typeof detections.$inferSelect;
 export type Alert = typeof alerts.$inferSelect;
 export type CameraHealth = typeof cameraHealth.$inferSelect;
+export type TeamInvite = typeof teamInvites.$inferSelect;
