@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Logo from "@/components/Logo";
+import PasswordField from "@/components/PasswordField";
 
 export default function PortalSignupPage() {
   const [submitting, setSubmitting] = useState(false);
@@ -87,12 +88,12 @@ export default function PortalSignupPage() {
             autoComplete="email"
             placeholder="kojo@kojosprovisions.com"
           />
-          <Field
+          <PasswordField
             label="Password"
             name="password"
-            type="password"
             autoComplete="new-password"
             hint="8+ characters"
+            minLength={8}
           />
 
           {error && (

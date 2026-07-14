@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import Logo from "@/components/Logo";
+import PasswordField from "@/components/PasswordField";
 
 export default function PortalLoginPage() {
   const [submitting, setSubmitting] = useState(false);
@@ -79,10 +80,9 @@ export default function PortalLoginPage() {
             autoComplete="email"
             autoFocus
           />
-          <Field
+          <PasswordField
             label="Password"
             name="password"
-            type="password"
             autoComplete="current-password"
           />
 

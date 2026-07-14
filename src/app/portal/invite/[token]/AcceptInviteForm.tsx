@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import PasswordField from "@/components/PasswordField";
 
 export default function AcceptInviteForm({ token }: { token: string }) {
   const [name, setName] = useState("");
@@ -46,23 +47,15 @@ export default function AcceptInviteForm({ token }: { token: string }) {
           className="w-full rounded-xl border border-border bg-background/60 px-4 py-3 text-foreground placeholder:text-foreground/30 outline-none focus:border-accent"
         />
       </label>
-      <label className="block">
-        <span className="block font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/55 mb-2">
-          Password{" "}
-          <span className="tracking-normal normal-case text-foreground/40">
-            · 8+ characters
-          </span>
-        </span>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-          minLength={8}
-          autoComplete="new-password"
-          className="w-full rounded-xl border border-border bg-background/60 px-4 py-3 text-foreground placeholder:text-foreground/30 outline-none focus:border-accent"
-        />
-      </label>
+      <PasswordField
+        label="Password"
+        name="password"
+        hint="8+ characters"
+        autoComplete="new-password"
+        minLength={8}
+        value={password}
+        onChange={setPassword}
+      />
 
       {error && (
         <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5">
