@@ -28,6 +28,9 @@ const segments = [
   "Real-estate companies",
   "Industries",
   "Community surveillance",
+  "Pharmacy shops",
+  "Poultry farms",
+  "Apartments",
 ];
 
 export default function TrustedBy() {

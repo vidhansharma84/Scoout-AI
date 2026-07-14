@@ -13,7 +13,7 @@ export default function Footer() {
     <footer className="relative border-t border-border bg-surface/40 backdrop-blur">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 py-16">
         <div className="grid gap-10 lg:grid-cols-12">
-          <div className="lg:col-span-5">
+          <div className="lg:col-span-4">
             <a href="#top" className="inline-flex items-center gap-2">
               <Logo className="w-8 h-8" />
               <span className="font-display text-xl font-semibold">
@@ -26,7 +26,7 @@ export default function Footer() {
             </p>
           </div>
 
-          <div className="lg:col-span-3 lg:col-start-7">
+          <div className="lg:col-span-2">
             <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-foreground/45">
               Product
             </p>
@@ -35,6 +35,38 @@ export default function Footer() {
               <li><a href="#trusted" className="hover:text-foreground">Trusted by</a></li>
               <li><a href="#alerts" className="hover:text-foreground">Alerts</a></li>
               <li><a href="#faq" className="hover:text-foreground">FAQ</a></li>
+            </ul>
+          </div>
+
+          <div className="lg:col-span-3">
+            <p className="font-mono text-[11px] uppercase tracking-[0.25em] text-foreground/45">
+              Contact
+            </p>
+            <ul className="mt-4 space-y-2 text-foreground/80">
+              <li>
+                <a href="tel:+233503818938" className="hover:text-accent transition-colors">
+                  +233 50 381 8938
+                </a>
+                <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                  Ghana
+                </span>
+              </li>
+              <li>
+                <a href="tel:+16477658028" className="hover:text-accent transition-colors">
+                  +1 (647) 765-8028
+                </a>
+                <span className="ml-2 font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/40">
+                  Canada
+                </span>
+              </li>
+              <li className="pt-1">
+                <a
+                  href="mailto:hello@scoout.app"
+                  className="hover:text-accent transition-colors"
+                >
+                  hello@scoout.app
+                </a>
+              </li>
             </ul>
           </div>
 

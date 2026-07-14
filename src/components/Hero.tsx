@@ -93,9 +93,10 @@ export default function Hero() {
             transition={{ duration: 0.7, delay: 0.55, ease: [0.22, 1, 0.36, 1] }}
             className="mt-7 max-w-2xl text-base sm:text-lg text-foreground/70 text-balance"
           >
-            Scoout AI turns your existing CCTV cameras into smart detectors.
-            Spot smoke, fire and gas leaks early — and catch motion or
-            suspicious activity at your store the moment it happens.
+            Scoout AI<span className="text-accent">.</span> turns your existing
+            CCTV cameras into smart detectors. Spot smoke, fire and gas leaks
+            early — and catch motion or suspicious activity at your store the
+            moment it happens.
           </motion.p>
 
           <motion.div

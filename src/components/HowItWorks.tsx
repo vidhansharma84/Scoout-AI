@@ -38,10 +38,10 @@ export default function HowItWorks() {
           </div>
           <div className="lg:col-span-4 lg:col-start-9">
             <p className="text-foreground/70 text-base sm:text-lg max-w-md text-balance">
-              We&apos;ve built and trained advanced vision models that plug
-              into your existing CCTV system to detect suspicious activities,
-              early signs of smoke and gas-leak patterns, and trigger instant
-              alerts.
+              We&apos;ve built and trained advanced AI<span className="text-accent">.</span> vision
+              models that plug into your existing CCTV system to detect
+              suspicious activities, early signs of smoke and gas-leak
+              patterns, and trigger instant alerts.
             </p>
             <div className="mt-6 flex flex-wrap items-center gap-3">
               <a
