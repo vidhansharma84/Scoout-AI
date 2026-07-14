@@ -9,6 +9,7 @@ const links = [
   { href: "#trusted", label: "Trusted by" },
   { href: "#alerts", label: "Alerts" },
   { href: "#faq", label: "FAQ" },
+  { href: "#contact", label: "Contact" },
 ];
 
 export default function Nav() {

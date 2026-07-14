@@ -58,8 +58,8 @@ export default function WatchFor() {
           <div className="lg:col-span-4 lg:col-start-9">
             <p className="text-foreground/70 text-base sm:text-lg text-balance">
               No rule editors, no event configs. Type what you care about —
-              Scoout turns it into a live watchlist and flags only the moments
-              that match.
+              Scoout AI<span className="text-accent">.</span> turns it into a
+              live watchlist and flags only the moments that match.
             </p>
           </div>
         </div>

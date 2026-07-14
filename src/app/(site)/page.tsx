@@ -7,6 +7,7 @@ import Alerts from "@/components/Alerts";
 import Download from "@/components/Download";
 import Faq from "@/components/Faq";
 import RequestForm from "@/components/RequestForm";
+import ContactUs from "@/components/ContactUs";
 
 export default function Home() {
   return (
@@ -20,6 +21,7 @@ export default function Home() {
       <Download />
       <Faq />
       <RequestForm />
+      <ContactUs />
     </>
   );
 }
