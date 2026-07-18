@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import StreamUrlHelp from "@/components/portal/StreamUrlHelp";
 
 const PROTOCOLS = [
   { id: "rtsp", label: "RTSP", hint: "Most CCTV / NVR brands" },
@@ -104,6 +105,9 @@ export default function AddCameraPage() {
             }
             mono
           />
+          <div className="mt-2">
+            <StreamUrlHelp />
+          </div>
         </Section>
 
         <Section title="2. Camera details">
