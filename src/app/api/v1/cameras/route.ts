@@ -53,9 +53,9 @@ export async function POST(req: Request) {
       { status: 400 },
     );
   }
-  if (!["rtsp", "onvif", "hls"].includes(protocol)) {
+  if (!["rtsp", "onvif", "hls", "phone"].includes(protocol)) {
     return NextResponse.json(
-      { error: "protocol must be one of rtsp, onvif, hls" },
+      { error: "protocol must be one of rtsp, onvif, hls, phone" },
       { status: 400 },
     );
   }

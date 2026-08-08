@@ -51,7 +51,7 @@ export async function PATCH(req: Request, { params }: { params: Promise<{ id: st
   if ("streamUrl" in body) patch.streamUrl = clip(body.streamUrl, 500);
   if ("protocol" in body) {
     const p = clip(body.protocol, 12).toLowerCase();
-    if (!["rtsp", "onvif", "hls"].includes(p)) {
+    if (!["rtsp", "onvif", "hls", "phone"].includes(p)) {
       return NextResponse.json({ error: "protocol invalid" }, { status: 400 });
     }
     patch.protocol = p;
