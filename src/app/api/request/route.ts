@@ -1,9 +1,18 @@
 import { NextResponse } from "next/server";
 import { saveSubmission } from "@/lib/submissions";
+import { sendWelcomeEmail } from "@/lib/welcome-email";
 
 export const runtime = "nodejs";
 
 const clip = (s: unknown, n: number) => String(s ?? "").slice(0, n).trim();
+
+function baseUrl(request: Request): string {
+  const env = process.env.APP_URL;
+  if (env) return env.replace(/\/$/, "");
+  const proto = request.headers.get("x-forwarded-proto") ?? "https";
+  const host = request.headers.get("host") ?? "scoout.ai";
+  return `${proto}://${host}`;
+}
 
 export async function POST(request: Request) {
   let body: Record<string, unknown>;
@@ -33,5 +42,15 @@ export async function POST(request: Request) {
     businessType: clip(body.businessType, 200),
   });
 
-  return NextResponse.json({ ok: true, id: rec.id });
+  // The lead is already saved, so a failing mailbox must not fail the form.
+  // sendWelcomeEmail never throws; this catch is belt-and-braces.
+  let emailed = false;
+  try {
+    const res = await sendWelcomeEmail(rec, baseUrl(request));
+    emailed = res.ok;
+  } catch (e) {
+    console.error("[request] welcome email failed:", e);
+  }
+
+  return NextResponse.json({ ok: true, id: rec.id, emailed });
 }
