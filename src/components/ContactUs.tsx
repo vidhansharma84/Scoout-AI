@@ -22,14 +22,14 @@ const channels: Channel[] = [
   {
     label: "Call — Ghana",
     value: "+233 50 381 8938",
-    hint: "Accra HQ",
+    hint: "Accra",
     href: "tel:+233503818938",
     icon: <PhoneIcon />,
   },
   {
     label: "Call — Canada",
     value: "+1 (647) 765-8028",
-    hint: "Toronto",
+    hint: "Toronto HQ",
     href: "tel:+16477658028",
     icon: <PhoneIcon />,
   },
