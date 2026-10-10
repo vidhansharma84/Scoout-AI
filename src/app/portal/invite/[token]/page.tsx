@@ -16,6 +16,7 @@ async function loadInvite(token: string) {
     .select({
       id: schema.teamInvites.id,
       email: schema.teamInvites.email,
+      phone: schema.teamInvites.phone,
       role: schema.teamInvites.role,
       shopId: schema.teamInvites.shopId,
       expiresAt: schema.teamInvites.expiresAt,
@@ -93,7 +94,7 @@ export default async function AcceptInvitePage({
               and password to get started.
             </p>
             <div className="mt-5 rounded-xl border border-border bg-background/60 px-4 py-2.5 text-center">
-              <p className="text-sm">{data.invite.email}</p>
+              <p className="text-sm">{data.invite.email ?? `+${data.invite.phone}`}</p>
             </div>
             <AcceptInviteForm token={token} />
           </div>

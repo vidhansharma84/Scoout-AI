@@ -25,7 +25,10 @@ export async function middleware(req: NextRequest) {
 
   // ── /portal/* — surveillance portal (JWT cookie) ─────────────────────
   if (path.startsWith("/portal")) {
-    const publicPortalPaths = ["/portal/login", "/portal/signup"];
+    const publicPortalPaths = ["/portal/login", "/portal/signup", "/portal/forgot"];
+    // Invitees have no account yet, so the accept page must be reachable
+    // logged out (and logged in, e.g. an owner checking the link).
+    if (path.startsWith("/portal/invite/")) return NextResponse.next();
     const isPublic = publicPortalPaths.includes(path);
     const access = req.cookies.get(ACCESS_COOKIE)?.value;
     const payload = await verifyAccess(access);

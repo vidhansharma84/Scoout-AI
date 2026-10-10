@@ -1,5 +1,5 @@
 // POST /api/v1/auth/login
-// Validates email + password. Sets cookies. Returns user + shop.
+// Validates phone-or-email + password. Sets cookies. Returns user + shop.
 
 import { NextResponse } from "next/server";
 import { eq, sql as dsql } from "drizzle-orm";
@@ -11,6 +11,7 @@ import {
 } from "@/lib/portal-auth";
 import { verifyPassword } from "@/lib/portal-passwords";
 import { setAuthCookies } from "@/lib/portal-session";
+import { parseIdentifier } from "@/lib/phone";
 
 export const runtime = "nodejs";
 
@@ -22,26 +23,35 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const email = String(body.email ?? "").toLowerCase().trim();
+  // `identifier` is phone or email. Older clients (the mobile app) send `email`,
+  // which may now hold a phone number too.
+  const raw = String(body.identifier ?? body.email ?? "");
   const password = String(body.password ?? "");
 
-  if (!email || !password) {
+  if (!raw.trim() || !password) {
     return NextResponse.json(
-      { error: "email and password are required" },
+      { error: "phone/email and password are required" },
       { status: 400 },
     );
   }
 
-  const db = getDb();
-  const [user] = await db
-    .select()
-    .from(schema.users)
-    .where(dsql`lower(${schema.users.email}) = ${email}`)
-    .limit(1);
-
   // Same error either way to avoid enumeration.
   const bad = () =>
-    NextResponse.json({ error: "Invalid email or password" }, { status: 401 });
+    NextResponse.json({ error: "Invalid phone/email or password" }, { status: 401 });
+
+  const id = parseIdentifier(raw);
+  const db = getDb();
+  const [user] = id
+    ? await db
+        .select()
+        .from(schema.users)
+        .where(
+          id.phone
+            ? eq(schema.users.phone, id.phone)
+            : dsql`lower(${schema.users.email}) = ${id.email}`,
+        )
+        .limit(1)
+    : [];
 
   if (!user) {
     // A little delay to slow brute-force
@@ -82,6 +92,7 @@ export async function POST(req: Request) {
     user: {
       id: user.id,
       email: user.email,
+      phone: user.phone,
       name: user.name,
       initials: user.initials,
       role: user.role,

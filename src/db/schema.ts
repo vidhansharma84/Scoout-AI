@@ -26,6 +26,7 @@ export const shops = pgTable("shops", {
   trialEndsAt: timestamp("trial_ends_at", { withTimezone: true })
     .default(sql`now() + interval '14 days'`)
     .notNull(),
+  trialReminderSentAt: timestamp("trial_reminder_sent_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
 });
 
@@ -36,15 +37,18 @@ export const users = pgTable(
     shopId: uuid("shop_id")
       .notNull()
       .references(() => shops.id, { onDelete: "cascade" }),
-    email: text("email").notNull(),
+    email: text("email"), // null for phone-only accounts
     passwordHash: text("password_hash").notNull(),
     role: text("role").notNull().default("reviewer"), // owner | reviewer
     name: text("name"),
     initials: text("initials"),
-    phone: text("phone"),
+    phone: text("phone"), // bare international digits — see normalizePhone()
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
-  (t) => [uniqueIndex("users_email_unique").on(sql`lower(${t.email})`)],
+  (t) => [
+    uniqueIndex("users_email_unique").on(sql`lower(${t.email})`),
+    uniqueIndex("users_phone_unique").on(t.phone).where(sql`${t.phone} IS NOT NULL`),
+  ],
 );
 
 export const sessions = pgTable(
@@ -81,6 +85,7 @@ export const cameras = pgTable(
     status: text("status").notNull().default("connecting"), // connecting|online|degraded|offline
     workerId: text("worker_id"),
     archived: boolean("archived").notNull().default(false),
+    offlineNotifiedAt: timestamp("offline_notified_at", { withTimezone: true }),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [index("cameras_shop_id_idx").on(t.shopId)],
@@ -175,7 +180,8 @@ export const teamInvites = pgTable(
     shopId: uuid("shop_id")
       .notNull()
       .references(() => shops.id, { onDelete: "cascade" }),
-    email: text("email").notNull(),
+    email: text("email"), // invite goes to email or phone, never neither
+    phone: text("phone"),
     role: text("role").notNull().default("reviewer"),
     token: text("token").notNull().unique(),
     invitedBy: uuid("invited_by").references(() => users.id, {
@@ -186,6 +192,22 @@ export const teamInvites = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
   },
   (t) => [index("team_invites_shop_idx").on(t.shopId)],
+);
+
+export const passwordResets = pgTable(
+  "password_resets",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    codeHash: text("code_hash").notNull(),
+    attempts: integer("attempts").notNull().default(0),
+    expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+    usedAt: timestamp("used_at", { withTimezone: true }),
+    createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
+  },
+  (t) => [index("password_resets_user_idx").on(t.userId, t.createdAt)],
 );
 
 export type Shop = typeof shops.$inferSelect;

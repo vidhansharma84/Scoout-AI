@@ -1,12 +1,14 @@
 import { listSubmissions } from "@/lib/submissions";
 import Logo from "@/components/Logo";
 import LogoutButton from "./LogoutButton";
+import { smsBalance } from "@/lib/sms";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 export default async function AdminPage() {
-  const submissions = await listSubmissions();
+  const [submissions, credit] = await Promise.all([listSubmissions(), smsBalance()]);
+  const lowCredit = credit !== null && credit < Number(process.env.MNOTIFY_LOW_CREDIT ?? 100);
 
   return (
     <div className="min-h-screen">
@@ -48,7 +50,19 @@ export default async function AdminPage() {
               </span>
             </h1>
           </div>
-          <div className="flex gap-3">
+          <div className="flex items-center gap-3">
+            <div
+              className={`rounded-full border px-4 py-2 text-sm ${
+                lowCredit
+                  ? "border-red-500/40 bg-red-500/10 text-red-300"
+                  : "border-border text-foreground/70"
+              }`}
+              title="mNotify SMS credit — alerts stop when this hits zero"
+            >
+              SMS credit:{" "}
+              <span className="font-semibold">{credit === null ? "unknown" : credit}</span>
+              {lowCredit && " — top up"}
+            </div>
             <a
               href="/admin/export"
               className="btn-shine inline-flex items-center gap-2 rounded-full bg-accent text-background px-5 py-2.5 text-sm font-medium glow-yellow hover:bg-accent-2 transition-colors"
@@ -99,20 +113,28 @@ export default async function AdminPage() {
                       </td>
                       <td className="px-4 py-3 font-medium">{s.name}</td>
                       <td className="px-4 py-3">
-                        <a
-                          href={`tel:${s.phone}`}
-                          className="text-foreground/80 hover:text-accent"
-                        >
-                          {s.phone}
-                        </a>
+                        {s.phone ? (
+                          <a
+                            href={`tel:${s.phone}`}
+                            className="text-foreground/80 hover:text-accent"
+                          >
+                            {s.phone}
+                          </a>
+                        ) : (
+                          <span className="text-foreground/30">—</span>
+                        )}
                       </td>
                       <td className="px-4 py-3">
-                        <a
-                          href={`mailto:${s.email}`}
-                          className="text-foreground/80 hover:text-accent"
-                        >
-                          {s.email}
-                        </a>
+                        {s.email ? (
+                          <a
+                            href={`mailto:${s.email}`}
+                            className="text-foreground/80 hover:text-accent"
+                          >
+                            {s.email}
+                          </a>
+                        ) : (
+                          <span className="text-foreground/30">—</span>
+                        )}
                       </td>
                       <td className="px-4 py-3 text-foreground/80">
                         {s.city || <span className="text-foreground/30">—</span>}

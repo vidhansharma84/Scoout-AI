@@ -11,12 +11,13 @@
 // The device filter is deliberately trigger-happy. Everything here exists to
 // decide whether the candidate deserves to wake somebody up.
 
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { and, desc, eq, gte } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { currentUser } from "@/lib/portal-session";
 import { confirmFireCandidate } from "@/lib/fire-vision";
 import { newKey, writeClip } from "@/lib/clip-storage";
+import { notifyCriticalAlert } from "@/lib/notify";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -186,6 +187,10 @@ export async function POST(req: Request) {
       at,
     })
     .returning();
+
+  // Texting (and maybe ringing) the team can take seconds; don't make the
+  // caller wait for it.
+  after(() => notifyCriticalAlert(alert));
 
   return NextResponse.json({
     status: "confirmed",

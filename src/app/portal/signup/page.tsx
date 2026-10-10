@@ -58,7 +58,7 @@ export default function PortalSignupPage() {
                   shopName: fd.get("shopName"),
                   city: fd.get("city"),
                   name: fd.get("name"),
-                  email: fd.get("email"),
+                  identifier: fd.get("identifier"),
                   password: fd.get("password"),
                 }),
               });
@@ -82,11 +82,10 @@ export default function PortalSignupPage() {
           </div>
           <Field label="Your name" name="name" placeholder="Kojo Mensah" />
           <Field
-            label="Business email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            placeholder="kojo@kojosprovisions.com"
+            label="Phone Number / Business Email"
+            name="identifier"
+            autoComplete="username"
+            placeholder="024 123 4567 or kojo@example.com"
           />
           <PasswordField
             label="Password"

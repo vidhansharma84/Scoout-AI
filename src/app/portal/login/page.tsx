@@ -54,7 +54,7 @@ export default function PortalLoginPage() {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                  email: fd.get("email"),
+                  identifier: fd.get("identifier"),
                   password: fd.get("password"),
                 }),
               });
@@ -74,17 +74,24 @@ export default function PortalLoginPage() {
           className="rounded-3xl border border-border bg-surface/60 p-7 backdrop-blur-xl space-y-5"
         >
           <Field
-            label="Business email"
-            name="email"
-            type="email"
-            autoComplete="email"
+            label="Phone Number / Business Email"
+            name="identifier"
+            autoComplete="username"
             autoFocus
           />
-          <PasswordField
-            label="Password"
-            name="password"
-            autoComplete="current-password"
-          />
+          <div>
+            <PasswordField
+              label="Password"
+              name="password"
+              autoComplete="current-password"
+            />
+            <Link
+              href="/portal/forgot"
+              className="mt-2 inline-block text-xs text-foreground/55 hover:text-accent"
+            >
+              Forgot password?
+            </Link>
+          </div>
 
           {error && (
             <p className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-xl px-4 py-2.5">

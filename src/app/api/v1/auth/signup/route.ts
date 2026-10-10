@@ -13,6 +13,7 @@ import {
 } from "@/lib/portal-auth";
 import { hashPassword } from "@/lib/portal-passwords";
 import { setAuthCookies } from "@/lib/portal-session";
+import { parseIdentifier } from "@/lib/phone";
 
 export const runtime = "nodejs";
 
@@ -28,20 +29,26 @@ export async function POST(req: Request) {
 
   const shopName = clip(body.shopName, 120);
   const name = clip(body.name, 120);
-  const email = clip(body.email, 200).toLowerCase();
+  // `identifier` is phone or email; older clients send `email`.
+  const raw = clip(body.identifier ?? body.email, 200);
   const password = String(body.password ?? "");
   const city = clip(body.city, 100) || null;
   const country = clip(body.country, 2).toUpperCase() || "GH";
 
-  if (!shopName || !name || !email || !password) {
+  if (!shopName || !name || !raw || !password) {
     return NextResponse.json(
-      { error: "shopName, name, email, and password are required" },
+      { error: "shopName, name, phone/email, and password are required" },
       { status: 400 },
     );
   }
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return NextResponse.json({ error: "Invalid email" }, { status: 400 });
+  const id = parseIdentifier(raw);
+  if (!id) {
+    return NextResponse.json(
+      { error: "Enter a valid phone number or email" },
+      { status: 400 },
+    );
   }
+  const { email, phone } = id;
   if (password.length < 8) {
     return NextResponse.json(
       { error: "Password must be at least 8 characters" },
@@ -55,11 +62,15 @@ export async function POST(req: Request) {
   const existing = await db
     .select({ id: schema.users.id })
     .from(schema.users)
-    .where(dsql`lower(${schema.users.email}) = ${email}`)
+    .where(
+      phone
+        ? eq(schema.users.phone, phone)
+        : dsql`lower(${schema.users.email}) = ${email}`,
+    )
     .limit(1);
   if (existing.length) {
     return NextResponse.json(
-      { error: "An account with that email already exists" },
+      { error: `An account with that ${email ? "email" : "phone number"} already exists` },
       { status: 409 },
     );
   }
@@ -77,6 +88,7 @@ export async function POST(req: Request) {
       .values({
         shopId: shopRow.id,
         email,
+        phone,
         passwordHash,
         role: "owner",
         name,
@@ -106,6 +118,7 @@ export async function POST(req: Request) {
     user: {
       id: user.id,
       email: user.email,
+      phone: user.phone,
       name: user.name,
       initials: user.initials,
       role: user.role,

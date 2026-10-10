@@ -4,16 +4,23 @@ import { useEffect, useState } from "react";
 
 type Member = {
   id: string;
-  email: string;
+  email: string | null;
+  phone: string | null;
   name: string | null;
   initials: string | null;
   role: string;
   createdAt: string;
 };
 
+// Phone-only accounts have no email; show the number instead.
+function contactOf(m: { email: string | null; phone: string | null }): string {
+  return m.email ?? (m.phone ? "+" + m.phone : "");
+}
+
 type Invite = {
   id: string;
-  email: string;
+  email: string | null;
+  phone: string | null;
   role: string;
   expiresAt: string;
   createdAt: string;
@@ -114,7 +121,7 @@ export default function TeamPage() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-2 flex-wrap">
                       <p className="font-medium">
-                        {m.name ?? m.email}
+                        {m.name ?? contactOf(m)}
                         {m.id === meId && (
                           <span className="ml-2 text-foreground/40 text-xs font-normal">
                             (you)
@@ -131,11 +138,11 @@ export default function TeamPage() {
                         {m.role}
                       </span>
                     </div>
-                    <p className="text-sm text-foreground/60 mt-0.5">{m.email}</p>
+                    <p className="text-sm text-foreground/60 mt-0.5">{contactOf(m)}</p>
                   </div>
                   {data.isOwner && m.id !== meId && (
                     <button
-                      onClick={() => removeMember(m.id, m.name ?? m.email)}
+                      onClick={() => removeMember(m.id, m.name ?? contactOf(m))}
                       className="text-foreground/45 hover:text-red-400 transition-colors text-sm px-2"
                       title="Remove teammate"
                     >
@@ -162,7 +169,7 @@ export default function TeamPage() {
                       ✉
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="font-medium">{inv.email}</p>
+                      <p className="font-medium">{contactOf(inv)}</p>
                       <p className="text-xs text-foreground/55 mt-0.5">
                         Invited as {inv.role} · expires{" "}
                         {new Date(inv.expiresAt).toLocaleDateString()}
@@ -170,7 +177,7 @@ export default function TeamPage() {
                     </div>
                     {data!.isOwner && (
                       <button
-                        onClick={() => revokeInvite(inv.id, inv.email)}
+                        onClick={() => revokeInvite(inv.id, contactOf(inv))}
                         className="text-foreground/45 hover:text-red-400 transition-colors text-sm px-2"
                       >
                         Revoke
@@ -198,12 +205,13 @@ export default function TeamPage() {
 }
 
 function InviteModal({ onClose, onSent }: { onClose: () => void; onSent: () => void }) {
-  const [email, setEmail] = useState("");
+  const [contact, setContact] = useState("");
   const [role, setRole] = useState<"reviewer" | "owner">("reviewer");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [sentLink, setSentLink] = useState<string | null>(null);
-  const [emailedVia, setEmailedVia] = useState<string | null>(null);
+  // "sms" / "email" when the link actually went out; null = copy it manually.
+  const [sentVia, setSentVia] = useState<string | null>(null);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -214,14 +222,14 @@ function InviteModal({ onClose, onSent }: { onClose: () => void; onSent: () => v
       const res = await fetch("/api/v1/team/invite", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, role }),
+        body: JSON.stringify({ identifier: contact, role }),
       });
       const data = await res.json();
       if (!res.ok) {
         setError(data?.error ?? "Could not send invite");
       } else {
         setSentLink(data.inviteLink);
-        setEmailedVia(data.emailSent ? data.emailProvider : null);
+        setSentVia(data.emailSent && data.emailProvider !== "noop" ? data.sentVia : null);
       }
     } catch {
       setError("Network error");
@@ -240,9 +248,9 @@ function InviteModal({ onClose, onSent }: { onClose: () => void; onSent: () => v
             </div>
             <h2 className="font-display text-xl font-semibold">Invite sent</h2>
             <p className="mt-2 text-sm text-foreground/70">
-              {emailedVia === "resend"
-                ? `We emailed the link to ${email}.`
-                : `Email isn't configured yet — copy this link and send it manually:`}
+              {sentVia
+                ? `We ${sentVia === "sms" ? "texted" : "emailed"} the link to ${contact}.`
+                : `Sending isn't configured yet — copy this link and send it manually:`}
             </p>
             <div className="mt-4 rounded-xl border border-border bg-background/60 px-3 py-2 text-left">
               <p className="font-mono text-xs text-foreground/80 break-all">
@@ -268,20 +276,19 @@ function InviteModal({ onClose, onSent }: { onClose: () => void; onSent: () => v
               Invite a teammate
             </h2>
             <p className="mt-1 text-sm text-foreground/65">
-              They&apos;ll get an email with a link to set their password and
-              join your shop.
+              They&apos;ll get a text or email with a link to set their
+              password and join your shop.
             </p>
             <label className="block mt-5">
               <span className="block font-mono text-[10px] uppercase tracking-[0.2em] text-foreground/55 mb-2">
-                Email
+                Phone Number / Business Email
               </span>
               <input
-                type="email"
                 required
                 autoFocus
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="ama@kojosprovisions.com"
+                value={contact}
+                onChange={(e) => setContact(e.target.value)}
+                placeholder="024 123 4567 or ama@kojosprovisions.com"
                 className="w-full rounded-xl border border-border bg-background/60 px-4 py-3 text-foreground placeholder:text-foreground/30 outline-none focus:border-accent"
               />
             </label>
@@ -330,7 +337,7 @@ function InviteModal({ onClose, onSent }: { onClose: () => void; onSent: () => v
               </button>
               <button
                 type="submit"
-                disabled={busy || !email}
+                disabled={busy || !contact}
                 className="btn-shine flex-1 rounded-full bg-accent text-background py-2.5 text-sm font-medium glow-yellow hover:bg-accent-2 transition-colors disabled:opacity-60"
               >
                 {busy ? "Sending…" : "Send invite"}

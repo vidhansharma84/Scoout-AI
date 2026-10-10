@@ -50,7 +50,9 @@ export function renderWelcomeEmail(
     ],
     [
       "We call you",
-      `We'll ring ${escape(rec.phone)} to understand what you want watched and answer anything you're unsure about.`,
+      rec.phone
+        ? `We'll ring ${escape(rec.phone)} to understand what you want watched and answer anything you're unsure about.`
+        : "We'll reply to this email to set up a quick call. Send us your phone number if you'd rather we ring you.",
     ],
     [
       "We set up your portal",
@@ -182,7 +184,9 @@ export function renderWelcomeEmail(
     `Your access request is in. Here's exactly what happens now:`,
     ``,
     `1. We review your request — within one business day, by a person.`,
-    `2. We call you on ${rec.phone} to understand what you want watched.`,
+    rec.phone
+      ? `2. We call you on ${rec.phone} to understand what you want watched.`
+      : `2. We reply to this email to set up a quick call.`,
     `3. We set up your portal, add your first camera with you, and write your first watch rule together.`,
     ``,
     `ONE THING THAT SPEEDS THIS UP`,

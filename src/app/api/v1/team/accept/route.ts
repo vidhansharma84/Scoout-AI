@@ -63,11 +63,17 @@ export async function POST(req: Request) {
   const [dup] = await db
     .select({ id: schema.users.id })
     .from(schema.users)
-    .where(dsql`lower(${schema.users.email}) = ${invite.email.toLowerCase()}`)
+    .where(
+      invite.phone
+        ? eq(schema.users.phone, invite.phone)
+        : dsql`lower(${schema.users.email}) = ${(invite.email ?? "").toLowerCase()}`,
+    )
     .limit(1);
   if (dup) {
     return NextResponse.json(
-      { error: "An account with that email already exists — sign in instead" },
+      {
+        error: `An account with that ${invite.phone ? "phone number" : "email"} already exists — sign in instead`,
+      },
       { status: 409 },
     );
   }
@@ -80,6 +86,7 @@ export async function POST(req: Request) {
       .values({
         shopId: invite.shopId,
         email: invite.email,
+        phone: invite.phone,
         passwordHash,
         role: invite.role,
         name,

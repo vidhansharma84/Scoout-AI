@@ -17,6 +17,7 @@ export async function GET() {
     .select({
       id: schema.users.id,
       email: schema.users.email,
+      phone: schema.users.phone,
       name: schema.users.name,
       initials: schema.users.initials,
       role: schema.users.role,
@@ -30,6 +31,7 @@ export async function GET() {
     .select({
       id: schema.teamInvites.id,
       email: schema.teamInvites.email,
+      phone: schema.teamInvites.phone,
       role: schema.teamInvites.role,
       expiresAt: schema.teamInvites.expiresAt,
       createdAt: schema.teamInvites.createdAt,

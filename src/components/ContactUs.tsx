@@ -44,7 +44,7 @@ const channels: Channel[] = [
 const socials = [
   {
     label: "WhatsApp",
-    href: "https://wa.me/233503818938",
+    href: "https://wa.me/16477658028",
     icon: <FaWhatsapp className="h-4 w-4" />,
   },
   {

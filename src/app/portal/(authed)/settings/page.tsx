@@ -1,4 +1,5 @@
 import { SHOP, USER } from "@/lib/portal-mocks";
+import AlertPhoneCard from "./AlertPhoneCard";
 
 export default function SettingsPage() {
   return (
@@ -13,6 +14,8 @@ export default function SettingsPage() {
       </header>
 
       <div className="space-y-6">
+        <AlertPhoneCard />
+
         <Card title="Business" subtitle="Shown to your team and on alerts.">
           <Row label="Business name" value={SHOP.name} />
           <Row label="City" value={SHOP.city} />
@@ -27,8 +30,6 @@ export default function SettingsPage() {
 
         <Card title="Notification channels" subtitle="How we reach you on critical alerts.">
           <Row label="Push notifications" value="On — Scoout mobile app" action="Configure" />
-          <Row label="SMS" value="+233 ••• ••• 4012" action="Configure" />
-          <Row label="Phone call (critical only)" value="+233 ••• ••• 4012" action="Configure" />
           <Row label="Email digest" value="Daily at 09:00" action="Configure" />
         </Card>
 

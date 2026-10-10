@@ -16,7 +16,7 @@ export type AccessPayload = JWTPayload & {
   sub: string; // user id
   shopId: string;
   role: string;
-  email: string;
+  email: string | null;
 };
 
 function accessSecret(): Uint8Array {
@@ -29,7 +29,7 @@ export async function signAccess(payload: {
   userId: string;
   shopId: string;
   role: string;
-  email: string;
+  email: string | null;
 }): Promise<string> {
   return await new SignJWT({
     shopId: payload.shopId,

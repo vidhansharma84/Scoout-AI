@@ -2,10 +2,11 @@
 // Worker confirms a detection matches a rule → we materialize an alert.
 // Body: { detectionId, ruleId, confidence, reasoning?, type?, severity? }
 
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { authorizeWorker } from "@/lib/worker-auth";
+import { notifyCriticalAlert } from "@/lib/notify";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -94,6 +95,10 @@ export async function POST(req: Request) {
       at: det.at,
     })
     .returning();
+
+  // Texting (and maybe ringing) the team can take seconds; don't make the
+  // caller wait for it.
+  after(() => notifyCriticalAlert(alert));
 
   return NextResponse.json({ alertId: alert.id });
 }

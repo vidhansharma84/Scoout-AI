@@ -80,17 +80,20 @@ export default function RequestForm() {
                 <>
                   <div className="grid gap-5 sm:grid-cols-2">
                     <Field label="Name" name="name" placeholder="Your full name" />
-                    <Field label="Phone" name="phone" type="tel" placeholder="+233 ..." />
-                    <Field label="Email" name="email" type="email" placeholder="you@business.com" />
+                    <Field
+                      label="Phone Number / Business Email"
+                      name="contact"
+                      placeholder="+233 ... or you@business.com"
+                    />
                     <Field label="City / Town" name="city" placeholder="Accra" />
-                  </div>
-
-                  <div className="mt-5 grid gap-5 sm:grid-cols-2">
                     <Field
                       label="Business Name"
                       name="businessName"
                       placeholder="e.g. Scoout Mart"
                     />
+                  </div>
+
+                  <div className="mt-5">
                     <Field
                       label="Type"
                       name="businessType"

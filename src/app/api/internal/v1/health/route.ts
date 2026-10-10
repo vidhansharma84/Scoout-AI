@@ -3,10 +3,11 @@
 // camera_health and mirrors the human-readable status into cameras.status
 // so the portal reflects it without an extra query.
 
-import { NextResponse } from "next/server";
+import { NextResponse, after } from "next/server";
 import { eq } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { authorizeWorker } from "@/lib/worker-auth";
+import { notifyCameraBackOnline } from "@/lib/notify";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -29,7 +30,7 @@ export async function POST(req: Request) {
 
   const db = getDb();
   const [cam] = await db
-    .select({ id: schema.cameras.id })
+    .select()
     .from(schema.cameras)
     .where(eq(schema.cameras.id, cameraId))
     .limit(1);
@@ -62,10 +63,16 @@ export async function POST(req: Request) {
       },
     });
 
+  // A camera we texted "offline" about is back: clear the flag so the next
+  // outage gets texted too, and tell the team it's watching again.
+  const recovered = streamState === "online" && cam.offlineNotifiedAt !== null;
+
   await db
     .update(schema.cameras)
-    .set({ status: streamState })
+    .set({ status: streamState, ...(recovered ? { offlineNotifiedAt: null } : {}) })
     .where(eq(schema.cameras.id, cam.id));
+
+  if (recovered) after(() => notifyCameraBackOnline(cam));
 
   return NextResponse.json({ ok: true });
 }

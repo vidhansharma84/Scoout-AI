@@ -1,5 +1,6 @@
-// POST /api/v1/team/invite  { email, role? }
-// Owner-only. Creates an invite token, emails a link to /portal/invite/[token].
+// POST /api/v1/team/invite  { identifier (phone or email), role? }
+// Owner-only. Creates an invite token and sends a link to /portal/invite/[token]
+// by email or SMS, whichever the owner gave. `email` is still accepted.
 
 import { NextResponse } from "next/server";
 import { randomBytes } from "crypto";
@@ -7,6 +8,8 @@ import { and, eq, gt, isNull, sql as dsql } from "drizzle-orm";
 import { getDb, schema } from "@/db";
 import { currentUser } from "@/lib/portal-session";
 import { sendEmail } from "@/lib/email";
+import { sendSms } from "@/lib/sms";
+import { parseIdentifier } from "@/lib/phone";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,11 +38,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
   }
 
-  const email = clip(body.email, 200).toLowerCase();
+  const id = parseIdentifier(clip(body.identifier ?? body.email, 200));
   const role = clip(body.role, 20).toLowerCase() || "reviewer";
-  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-    return NextResponse.json({ error: "Valid email required" }, { status: 400 });
+  if (!id) {
+    return NextResponse.json(
+      { error: "Valid phone number or email required" },
+      { status: 400 },
+    );
   }
+  const { email, phone } = id;
   if (!["reviewer", "owner"].includes(role)) {
     return NextResponse.json({ error: "Role must be reviewer or owner" }, { status: 400 });
   }
@@ -52,7 +59,9 @@ export async function POST(req: Request) {
     .where(
       and(
         eq(schema.users.shopId, me.shop.id),
-        dsql`lower(${schema.users.email}) = ${email}`,
+        phone
+          ? eq(schema.users.phone, phone)
+          : dsql`lower(${schema.users.email}) = ${email}`,
       ),
     )
     .limit(1);
@@ -70,7 +79,9 @@ export async function POST(req: Request) {
     .where(
       and(
         eq(schema.teamInvites.shopId, me.shop.id),
-        dsql`lower(${schema.teamInvites.email}) = ${email}`,
+        phone
+          ? eq(schema.teamInvites.phone, phone)
+          : dsql`lower(${schema.teamInvites.email}) = ${email}`,
         isNull(schema.teamInvites.acceptedAt),
         gt(schema.teamInvites.expiresAt, dsql`now()`),
       ),
@@ -86,6 +97,7 @@ export async function POST(req: Request) {
       .values({
         shopId: me.shop.id,
         email,
+        phone,
         role,
         token,
         invitedBy: me.user.id,
@@ -99,32 +111,41 @@ export async function POST(req: Request) {
   const senderName = me.user.name || "your teammate";
   const shopName = me.shop.name;
 
-  const emailResult = await sendEmail({
-    to: email,
-    subject: `${senderName} invited you to ${shopName} on Scoout AI`,
-    text:
-      `${senderName} invited you to join ${shopName} on Scoout AI as a ${role}.\n\n` +
-      `Accept your invitation: ${link}\n\n` +
-      `This link expires in 7 days. Scoout AI — surveillance intelligence.`,
-    html:
-      `<p>${senderName} invited you to join <strong>${escape(shopName)}</strong> on Scoout AI as a <strong>${role}</strong>.</p>` +
-      `<p><a href="${link}" style="display:inline-block;background:#FFCC1F;color:#0a0a0b;padding:10px 20px;border-radius:999px;text-decoration:none;font-weight:600">Accept invitation</a></p>` +
-      `<p>Or paste this link into your browser:<br><code>${link}</code></p>` +
-      `<p style="color:#8a8a85;font-size:12px">This link expires in 7 days. Scoout AI — surveillance intelligence.</p>`,
-  });
+  const sent = id.email === null
+    ? await sendSms({
+        to: id.phone,
+        message:
+          `${senderName} invited you to join ${shopName} on Scoout AI. ` +
+          `Accept here (expires in 7 days): ${link}`,
+      })
+    : await sendEmail({
+        to: id.email,
+        subject: `${senderName} invited you to ${shopName} on Scoout AI`,
+        text:
+          `${senderName} invited you to join ${shopName} on Scoout AI as a ${role}.\n\n` +
+          `Accept your invitation: ${link}\n\n` +
+          `This link expires in 7 days. Scoout AI — surveillance intelligence.`,
+        html:
+          `<p>${senderName} invited you to join <strong>${escape(shopName)}</strong> on Scoout AI as a <strong>${role}</strong>.</p>` +
+          `<p><a href="${link}" style="display:inline-block;background:#FFCC1F;color:#0a0a0b;padding:10px 20px;border-radius:999px;text-decoration:none;font-weight:600">Accept invitation</a></p>` +
+          `<p>Or paste this link into your browser:<br><code>${link}</code></p>` +
+          `<p style="color:#8a8a85;font-size:12px">This link expires in 7 days. Scoout AI — surveillance intelligence.</p>`,
+      });
 
   return NextResponse.json({
     ok: true,
     invite: {
       id: invite.id,
       email: invite.email,
+      phone: invite.phone,
       role: invite.role,
       expiresAt: invite.expiresAt,
     },
-    // Return the link so owners can copy-paste when email isn't configured.
+    // Return the link so owners can copy-paste when email/SMS isn't configured.
     inviteLink: link,
-    emailProvider: emailResult.provider,
-    emailSent: emailResult.ok,
+    sentVia: phone ? "sms" : "email",
+    emailProvider: sent.provider,
+    emailSent: sent.ok,
   });
 }
 
